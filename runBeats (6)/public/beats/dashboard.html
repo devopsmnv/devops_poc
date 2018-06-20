@@ -1,0 +1,664 @@
+
+<html >
+    <head>
+        <title>beats-Dashboard</title>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1" name="viewport"/>
+        <link href="../skin/beats.ico" rel="icon" type="image/x-icon"/>
+       
+		<link href="../skin/bootstrap4.1/css/bootstrap.min.css" rel="stylesheet"/>
+		<link href="../skin/DataTables/DataTables-1.10.16/css/jquery.dataTables.min.css" rel="stylesheet"/>
+		<link href="../skin/fontawesome-free-5.0.13/web-fonts-with-css/css/fontawesome-all.css" rel="stylesheet" />
+		
+        <script src="../skin/bootstrap4.1/jquery/jquery.min.js" >	</script>
+        <script src="../skin/bootstrap4.1/popper.min.js" >	</script>
+        <script src="../skin/bootstrap4.1/bootstrap.min.js" > 	</script>
+        <script src="beatsDashboard.js" > 	</script>
+
+		<script src="../skin/DataTables/moment.min.js" >	</script>
+		<script src="../skin/DataTables/DataTables-1.10.16/js/jquery.dataTables.min.js" >	</script>
+		<script src="../skin/DataTables/datetime-moment.js" >	</script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+		<script src="http://cdn.datatables.net/plug-ins/1.10.7/sorting/datetime-moment.js"></script>
+
+        <style>
+			 body {background-color: #FAF9FD; font-family:roboto,calibri; font-size:11px; color:DIMGRAY;}
+			 h6{font-size:11px; }
+			.panel-info{font-weight:bold;font-size: 11px;text-align: center;}
+ 			.panel-heading {background-color:LIGHTSEAGREEN;color: white;}
+
+			a{color:#616161;}
+			.list-group{font-size: 11px;text-align: center;}
+			.table{font-size:10px;text-align:left; }
+			.badge{font-size: 13px;text-align: center;float: right; } 
+			.subGroup{font-size: 11px;color:grey;}
+			.nav-tabs{background-color:#DAF7A6;font-weight:bold;}
+			.fa-lock { color: red;}			 
+		</style>
+		 
+    </head>
+    <body>
+		<div class="container">
+			<div class="row" >
+				<div class="col-sm-9">  
+					<h3>beats Dashboard | <u> <span id="envName"> Prod </span></u> Environment </h3> 
+				</div>
+				<div class=" col-sm-2" >  
+					<B> Legend : </B> Click <i class="far fa-dot-circle" title="click to refresh" > </i> to refresh
+				</div>
+				<div class="col-sm-1"  style="float: right;">   	
+					 <a href="/../beats/v1/logout"   > <B> logout</B> </a>
+					 <i class="fas fa-2x  fa-user-circle"  style="color:YellowGreen;"> </i> 
+				</div>				
+			</div> <!-- row -->
+            <div class="row">
+				<div class=" col-sm-6"> 
+					<h6> Last Updated : <span id="displayDate"></span>
+				
+					<span id="refreshAllPanels" class="badge badge-warning">
+						<i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Refresh panel...
+					</span> 
+					</h6>	
+				</div>
+                <div  class=" col-sm-3" > Configured Agent & Integ Servers 
+					<a  href="#" ><span class="badge badge-info" >109</span></a> 
+					
+					<a href="#" ><span class="badge badge-info" style="margin-right: 5px;">41</span></a> 
+                </div>
+                <div class="col-sm-3" > 
+				<a href="#" >
+						<i class="far fa-dot-circle" title="click to refresh" onclick="loadRunningServerCount()"></i> 
+				</a>
+				Running Servers (App + Agent + Integ)
+ 					<span id="runningServerCount" class="badge badge-warning">
+					</span> 
+				</div>
+            </div> <!-- row -->
+			<hr/> 
+			<div class="row"> 
+				<div class="col-sm-12" > 
+					<!-- Nav tabs -->
+					<ul class="nav nav-tabs nav-justified">
+						<li class="nav-item">
+							<a class="nav-link active" data-toggle="tab" href="#Panel_1" role="tab">  
+							<i class="fa  fa-2x fa-shipping-fast" aria-hidden="true"></i>  Order & Shipments 
+							<i class="far fa-dot-circle" onclick="refreshOrderPanel()"
+								title="click to refresh all panels in this Tab" ></i>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#Panel_2" role="tab">
+							<i class="fa  fa-2x fa-tags" aria-hidden="true"></i>   Inventory 
+							<i class="far fa-dot-circle" onclick="refreshInventoryPanel()" 
+								title="click to refresh all panels in this Tab" ></i>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#Panel_3" role="tab">
+							<i class="fa  fa-2x fa-server" aria-hidden="true"></i>  System Perf & Exceptions 
+							<i class="far fa-dot-circle"  onclick="refreshExceptionsPanel()" 
+								title="click to refresh all panels in this tab"></i>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#Panel_4" role="tab">
+							<i class="fa  fa-2x fa-file-alt" aria-hidden="true"></i>  Reports	
+							<i class="far fa-dot-circle"  onclick="refreshReportsPanel()" 
+								title="click to refresh all panels in this tab"></i>
+							</a>
+						</li>						
+					</ul>	
+				</div> 			
+            </div> <!-- row -->
+
+			<!-- MasterTab panels -->
+			<div class="tab-content card">
+				<!--Panel_1-->
+				<div class="tab-pane fade in show active" id="Panel_1" role="tabpanel">
+					<br>
+					<div class="row"> 
+						<div class=" col-sm-3">
+							<div class="panel panel-info">
+								<div class="panel-heading">OrderType-Channel Count - 24hr  
+									<a href="#" >
+										<i class="far fa-dot-circle" title="click to refresh" onclick="loadOrderCountPanel()" ></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="orderCountSummary" class="display compact" style="font-size:12px;">
+										<thead>
+										<tr>
+										<!-- <th></th> -->
+										<th>OrderType </th>
+										<th>Channel </th>
+										<th>Count </th>
+										</tr>
+										</thead>
+		 
+									</table>	 
+								</div>
+							</div>
+						</div>
+
+						<div class=" col-sm-3">
+							<div class="panel panel-info">
+								<div class="panel-heading">SO LineCount By Status- 24hr  
+									<a href="#" >
+										<i class="far fa-dot-circle" title="click to refresh" onclick="salesOrderLinesCountByStatus()"></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="soLineByStatus" class="display compact" style="font-size:10px;">
+										<thead>
+										<tr>
+										<th>Type </th>
+										<th>Count </th>
+										</tr>
+										</thead>
+		 
+									</table>	 
+								</div>
+							</div>
+						</div>		
+						
+						<div class=" col-sm-6">
+							<div class="panel panel-info">
+								<div class="panel-heading">Recent Order Lines (Not sent to DC)
+									<a href="#" >
+										<i class="far fa-dot-circle" title="click to refresh" onclick="recentOrdersList()"></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="recentOrders" class="display compact" style="font-size:10px;">
+										<thead>
+										<tr>
+										<th>Type </th>
+										<th>Channel </th>
+										<th>OrderNo </th>
+										<th>OrderDate </th>
+										<th>FirstName </th>
+										<th>LastName </th>								
+										<th>Status </th> 
+										</tr>
+										</thead>
+		 
+									</table>	 
+								</div>
+							</div>
+						</div>
+			 
+					</div> <!-- row -->
+					<hr/>  
+					<div class="row"> 
+						<div class=" col-sm-3">
+							<div class="panel panel-info">
+								<div class="panel-heading"> Open Order Hold Count
+									<a href="#openOrderHoldsCount" >
+										<i class="far fa-dot-circle" title="click to refresh" onclick="loadOrderHoldsCount()"></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="openOrderHoldsCount" class="display compact" style="font-size:11px;">
+										<thead>
+										<tr>
+										<th>Channel </th>
+										<th>Hold Type </th>
+										<th>Count </th>
+										</tr>
+										</thead> 
+									</table>	 
+								</div>
+							</div>	 
+						</div>	
+
+						<div class=" col-sm-3">
+							<div class="panel panel-info">
+								<div class="panel-heading">RO LineCount By Status- 24hr  
+									<a href="#roLineByStatus" >
+										<i class="far fa-dot-circle" title="click to refresh" onclick="returnOrderLinesCountByStatus()"></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="roLineByStatus" class="display compact" style="font-size:12px;">
+										<thead>
+										<tr>
+										<th>Type </th>
+										<th>Count </th>
+										</tr>
+										</thead>
+
+									</table>	 
+								</div>
+							</div>
+ 				
+						</div>	
+						
+						<div class=" col-sm-3">
+							<div class="panel panel-info">
+								<div class="panel-heading">STM LineCount By Status- 24hr  
+									<a href="#roLineByStatus" >
+										<i class="far fa-dot-circle" title="click to refresh" onclick="stmOrderLinesCountByStatus()"></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="poLineByStatus" class="display compact" style="font-size:12px;">
+										<thead>
+										<tr>
+										<th>Type </th>
+										<th>Count </th>
+										</tr>
+										</thead> 
+									</table>	 
+								</div>
+							</div>	
+						</div>	
+						
+						<div class=" col-sm-3">						
+							<div class="panel panel-info">
+								<div class="panel-heading"> Shipments with Same AWB# issue
+									<a href="#loadDuplicateAWBOnShipment" >
+									<i class="far fa-dot-circle" title="click to refresh" onclick="loadDuplicateAWBOnShipmentList()"></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="loadDuplicateAWBOnShipment" class="display compact" style="font-size:11px;">
+									<thead>
+									<tr>
+									<th>AWB # </th>
+									<th>ShipmentCount > 1 </th>
+									</tr>
+									</thead> 
+									</table>	 
+								</div>
+							</div>
+						</div>
+					</div> <!-- row -->
+					<hr/> 			
+					
+					<div class="row"> 
+						<div class=" col-sm-12">
+							<div class="panel panel-info">
+								<div class="panel-heading">WCS Shipment Info- 5 Days  
+									<a href="#" >
+										<i class="far fa-dot-circle" title="click to refresh" onclick="loadShipmentCountPanel()" ></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="shipmentCountSummary" class="display compact" style="font-size:10px;">
+										<thead>
+										<tr>
+											<th>OrderNo </th>
+											<th>OrderDate </th>
+											<th>Full Name </th>
+											<th>City-State </th>
+											<th>PaymentType </th>
+											<th>Shipment# </th>
+											<th>Ship Status </th>
+											<th>Amt. </th>
+											<th>Carrier </th>
+											<th>AWB# </th>
+											<th>Expected Delvy Dt. </th>
+											<th>Actual Delvy Dt. </th>																
+										</tr>
+										</thead> 
+									</table>	 
+								</div>
+							</div>
+						</div> 
+					</div> <!-- row --> 	
+ 				</div>
+				<!--/.Panel_1-->
+				
+				<!--Panel_2-->
+				<div class="tab-pane fade" id="Panel_2" role="tabpanel">
+					<br>
+					<div class="row"> 
+					<div class=" col-sm-3">
+						<div class="panel panel-info">
+							<div class="panel-heading">WCS Synch Delta Inv - 24hr  
+								<a href="#wcsSyncInvChanges" >
+									<i class="far fa-dot-circle" title="click to refresh" onclick="loadWcsSyncInvChanges()"></i>
+								</a>
+							</div>
+							<div class="list-group">			
+								<table id="wcsSyncInvChanges" class="display compact" style="font-size:10px;">
+									<thead>
+									<tr>
+									<th>ItemID </th>
+									<th>Qty </th>
+									<th>TimeStamp </th>
+									</tr>
+									</thead> 
+								</table>	 
+							</div>
+						</div>
+					</div>
+
+					<div class=" col-sm-5">
+						<div class="panel panel-info">
+							<div class="panel-heading">WCS Reservation Summary - 1hr
+								<a href="#wcsReservationCountSummary" >
+									<i class="far fa-dot-circle" title="click to refresh" onclick="loadWcsReservationCountPanel()" ></i>
+								</a>
+							</div>
+							<div class="list-group">			
+								<table id="wcsReservationCountSummary" class="display compact" style="font-size:10px;">
+									<thead>
+									<tr>
+										<th>Resv Id </th>
+										<th>Ship Date </th> 	
+										<th>Qty</th>
+										<th>Exp Date </th> 
+										<th>Prod. Avl Date </th>
+										<th>ModUserId </th> 
+										<th>ModifyProgId </th>
+										<th>DemandType </th> 	
+									</tr>
+									</thead> 
+								</table>	 
+							</div>
+						</div>
+					</div>  
+					<div class=" col-sm-4">
+									<div class="panel panel-info">
+										<div class="panel-heading">ATP calls WCS - 2 hr Period 
+											<a href="#wcsAtpCallsList" >
+												<i class="far fa-dot-circle" title="click to refresh" onclick="loadWcsAtpCallsPanel()" ></i>
+											</a>
+										</div>
+										<div class="list-group">			
+											<table id="wcsAtpCallsList" class="display compact" style="font-size:10px;">
+												<thead>
+												<tr>
+													<th>Context </th>
+													<th>Invocations </th> 																	
+													<th>Timestamp </th>																			
+												</tr>
+												</thead> 
+											</table>	 
+										</div>
+									</div>
+								</div>				
+
+					</div> <!-- row --> 	
+					<hr/> 
+					<div class="row"> 
+					<div class=" col-sm-6">
+					<div class="panel panel-info">
+					<div class="panel-heading">Pending Refund 
+						<a href="#loadPendingRefund" >
+							<i class="far fa-dot-circle" title="click to refresh" onclick="loadPendingRefundList()"></i>
+						</a>
+					</div>
+					<div class="list-group">			
+						<table id="loadPendingRefund" class="display compact" style="font-size:10px;">
+							<thead>
+							<tr>
+								<th>Order # </th>
+								<th>Order Date </th>
+								<th>Paymt Type </th>
+								<th>Paymt Status </th>
+								<th>Total Auth </th>
+								<th>Total Charged </th>
+								<th>Total Refunded </th>						
+							</tr>
+							</thead> 
+						</table>	 
+					</div>
+					</div>
+					</div>
+
+					<div class=" col-sm-4">
+					<div class="panel panel-info">
+						<div class="panel-heading">DADI Audit : Summary - Last 10 Days  
+							<a href="#dadiAudit" >
+								<i class="far fa-dot-circle" title="click to refresh" onclick="loadDadiAuditSummary()"></i>
+							</a>
+						</div>
+						<div class="list-group">			
+							<table id="dadiAudit" class="display compact" style="font-size:10px;">
+								<thead>
+								<tr>
+								<th>UploadTime </th>
+								<th>UploadedBy </th> 
+								<th>FileName </th> 
+								</tr>
+								</thead> 
+							</table>	 
+						</div>
+					</div>
+					</div>		  		
+						
+					</div> <!-- row --> 	
+					<hr/> 
+					<div class="row">  
+					<div class=" col-sm-3">
+					<div class="panel panel-info">
+						<div class="panel-heading">SKU Count : Summary  
+							<a href="#skuSummary" >
+								<i class="far fa-dot-circle" title="click to refresh" onclick="loadSKUSummary()"></i>
+							</a>
+						</div>
+						<div class="list-group">			
+							<table id="skuSummary" class="display compact" style="font-size:10px;">
+								<thead>
+								<tr>
+								<th>Status </th>
+								<th>Qty </th> 
+								</tr>
+								</thead> 
+							</table>	 
+						</div>
+					</div>
+					</div>	
+
+					<div class=" col-sm-3">
+					<div class="panel panel-info">
+						<div class="panel-heading"> Item Count by MotherBrand 
+							<a href="#countByMotherBrand" >
+								<i class="far fa-dot-circle" title="click to refresh" onclick="loadCountByMotherBrand()"></i>
+							</a>
+						</div>
+						<div class="list-group">			
+							<table id="countByMotherBrand" class="display compact" style="font-size:10px;">
+								<thead>
+								<tr>
+								<th>MotherBrand </th>
+								<th>ItemCount </th> 
+								</tr>
+								</thead> 
+							</table>	 
+						</div>
+					</div>
+					</div>	
+
+					<div class=" col-sm-4">
+					<div class="panel panel-info">
+						<div class="panel-heading">Item Count by Brand & MotherBrand  
+							<a href="#countByBrandAndMotherBrand" >
+								<i class="far fa-dot-circle" title="click to refresh" onclick="loadCountByBrandAndMotherBrand()"></i>
+							</a>
+						</div>
+						<div class="list-group">			
+							<table id="countByBrandAndMotherBrand" class="display compact" style="font-size:10px;">
+								<thead>
+								<tr>
+								<th>Brand </th>
+								<th>MotherBrand </th> 
+								<th>ItemCount </th> 
+								</tr>
+								</thead> 
+							</table>	 
+						</div>
+					</div>
+					</div>				
+					</div> <!-- row --> 
+				</div>
+				<!--/.Panel_2-->
+				
+				<!--Panel_3-->
+				<div class="tab-pane fade" id="Panel_3" role="tabpanel">
+					<br>
+					<div class="row"> 
+					<div class=" col-sm-4">
+					<div class="panel panel-info">
+						<div class="panel-heading">Integ. Server Processing Rate - 1hr 
+							<a href="#integServerCountSummary" >
+								<i class="far fa-dot-circle" title="click to refresh" onclick="loadIntegServerCountPanel()" ></i>
+							</a>
+						</div>
+						<div class="list-group">			
+							<table id="integServerCountSummary" class="display compact" style="font-size:10px;">
+								<thead>
+								<tr>
+									<th>Server Name </th>
+									<th>JobCount </th> 	
+								</tr>
+								</thead> 
+							</table>	 
+						</div>
+					</div>
+					</div>
+
+					<div class=" col-sm-4">
+					<div class="panel panel-info">
+						<div class="panel-heading">Agent Server Processing Rate - 1hr 
+							<a href="#agentServerCountSummary" >
+								<i class="far fa-dot-circle" title="click to refresh" onclick="loadAgentServerCountPanel()" ></i>
+							</a>
+						</div>
+						<div class="list-group">			
+							<table id="agentServerCountSummary" class="display compact" style="font-size:10px;">
+								<thead>
+								<tr>
+									<th>Server Name </th>
+									<th>JobCount </th> 																	
+								</tr>
+								</thead> 
+							</table>	 
+						</div>
+					</div>
+					</div>
+
+					<div class=" col-sm-4">
+						<div class="panel panel-info">
+							<div class="panel-heading">Open Alerts 
+								<a href="#openAlertsCountSummary" >
+									<i class="far fa-dot-circle" title="click to refresh" onclick="loadOpenAlertsCountPanel()" ></i>
+								</a>
+							</div>
+							<div class="list-group">			
+								<table id="openAlertsCountSummary" class="display compact" style="font-size:10px;">
+									<thead>
+									<tr>
+										<th>Alert Name </th>
+										<th>Count </th> 																	
+									</tr>
+									</thead> 
+								</table>	 
+							</div>
+						</div>
+					</div>		
+					
+					</div> <!-- row -->  
+					<hr />					
+					<div class="row">   
+						<div class=" col-sm-4">
+							<div class="panel panel-info">
+								<div class="panel-heading">Exceptions - 24hr 
+									<a href="#exceptionCountSummary" >
+										<i class="far fa-dot-circle" title="click to refresh" onclick="loadExceptionsCountPanel()" ></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="exceptionCountSummary" class="display compact" style="font-size:10px;">
+										<thead>
+										<tr>
+											<th>Flow Name </th>
+											<th>Error Count </th> 															
+										</tr>
+										</thead> 
+									</table>	 
+								</div>
+							</div>
+						</div>	
+						<div class=" col-sm-4">
+							<div class="panel panel-info">
+								<div class="panel-heading">Ecom AWB Counts
+									<a href="#loadAwbCount" >
+										<i class="far fa-dot-circle" title="click to refresh" onclick="loadAwbCountPanel()" ></i>
+									</a>
+								</div>
+								<div class="list-group">			
+									<table id="loadAwbCount" class="display compact" style="font-size:10px;">
+										<thead>
+										<tr>
+											<th>Carrier Name </th>
+											<th>Pay Mode </th> 															
+											<th> Used</th>
+											<th> Count </th> 
+										</tr>
+										</thead> 
+									</table>	 
+								</div>
+							</div>
+						</div>						
+					</div> <!-- row -->  
+					<hr />	 
+				</div>
+				<!-- Panel_3-->
+
+				<!--Panel_4-->
+				<div class="tab-pane fade" id="Panel_4" role="tabpanel">
+					<br>
+					<div class="row"> 
+					<div class=" col-sm-6">
+					<div class="panel panel-info">
+						<div class="panel-heading"> Last 7 Days Sales Order Report
+							<a href="#salesOrderReport" >
+								<i class="far fa-dot-circle" title="click to refresh" onclick="loadSalesOrderReportPanel()" ></i>
+							</a>
+						</div>
+						<div class="list-group">			
+							<table id="salesOrderReport" class="display compact" style="font-size:10px;">
+								<thead>
+								<tr>
+									<th>Date</th>
+									<th>Channel </th>
+									<th>Order Count </th> 								
+								</tr>
+								</thead> 
+							</table>	 
+						</div>
+					</div>
+					</div>
+
+					<div class=" col-sm-6">
+					<div class="panel panel-info">
+						<div class="panel-heading"> Last 7 Days Returns Order Report
+							<a href="#returnOrderReport" >
+								<i class="far fa-dot-circle" title="click to refresh" onclick="loadReturnOrderReportPanel()" ></i>
+							</a>
+						</div>
+						<div class="list-group">			
+							<table id="returnOrderReport" class="display compact" style="font-size:10px;">
+								<thead>
+								<tr>
+									<th>Date</th>
+									<th>Channel </th>
+									<th>Order Count </th> 																
+								</tr>
+								</thead> 
+							</table>	 
+						</div>
+					</div>
+					</div>  
+					</div> <!-- row -->  
+ 				</div>
+				<!-- Panel_4-->				
+			</div>
+			<!-- MasterTab -->		 
+	</div> <!-- container --> 
+		
+    </body>
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="samant">
+    <link href="skin/beats.ico" rel="icon" type="image/x-icon"/>
+
+    <title>beats-Login</title> 
+	<link href="skin/bootstrap4.1/css/bootstrap.min.css" rel="stylesheet"/>
+	<link href="skin/fontawesome-free-5.0.13/web-fonts-with-css/css/fontawesome-all.css" rel="stylesheet" />
+	
+	<script src="skin/bootstrap4.1/jquery/jquery.min.js" >	</script>
+	<script src="skin/bootstrap4.1/bootstrap.min.js" > 	</script>
+	
+	<script>
+	
+ 	function validateForm(event) {
+		
+		//Fetch form to apply custom Bootstrap validation
+		var form = $("#formLogin") 
+		form.action="http://localhost:4567/beats/v1/board";
+		form.method="POST";
+ 		//alert(form[0].action);
+		form.submit()
+	} 
+	</script>
+	
+  </head>
+
+  <body class="text-center">
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-12">
+             <div class="row">
+                <div class="col-md-4 mx-auto"> 
+                    <!-- form card login -->
+                    <div class="card rounded-0">
+                        <div class="card-header">
+                            <h3 class="mb-1">beats | Login</h3>
+							<img src="Titan_Logo.png" alt="Titan" height="75" width="80"> 
+
+							<h6 class="mb-0">* Use your Sterling Login Credentials</h6>
+                        </div>
+                        <div class="card-body">
+                            <form class="form" role="form"  id="formLogin" action="/beats/v1/board" method="POST" >
+                                <div class="form-group">
+                                    <label for="uname1">Username</label>
+                                    <input type="text" class="form-control form-control-lg rounded-0" name="userId" id="uname1" required >
+                                    <div class="invalid-feedback">Oops, you missed this one.</div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password" class="form-control form-control-lg rounded-0" name="passWd" id="pwd1" required autocomplete="new-password">
+                                    <div class="invalid-feedback">Enter your password too!</div>
+                                </div>
+                                <div>
+									  <label><input type="checkbox" value=""> Remember</label>
+
+                                </div>
+                                <button type="submit" class="btn btn-success btn-lg float-right" id="btnLogin" >Login</button>
+                            </form>
+                        </div>
+                        <!--/card-block-->
+                    </div>
+                    <!-- /form card login -->
+
+                </div>
+
+
+            </div>
+            <!--/row-->
+
+        </div>
+        <!--/col-->
+    </div>
+    <!--/row-->
+</div>
+<!--/container-->
+  </body>
+</html>

@@ -1,0 +1,256 @@
+q_0001 = Select * from \
+			( select TO_CHAR(SYSDATE, 'MONTH DD, YYYY, HH24:MI:SS') as SYSDATETIMESTAMP from dual), \
+			( select  Count(*) as AgentCount    from AWS_STER_SCH.YFS_AGENT_CRITERIA A, AWS_STER_SCH.yfs_server B   \
+			where A.Server_key = B.Server_Key and B.modifyUserID !='SYSTEM'), \
+			( select Count(*) as IntegrationServerCount    \
+			from AWS_STER_SCH.yfs_server A, AWS_STER_SCH.yfs_flow B,AWS_STER_SCH.yfs_sub_flow C   \
+			where     A.Server_key=C.Server_key and B.Flow_Key= C.Flow_Key and A.server_type='00'    \
+			and A.modifyUserID !='SYSTEM' ) \
+
+
+q_0002 = SELECT document_type,entry_type, count(order_no) as OrderCount, \
+			CASE \
+				WHEN document_type ='0001' THEN 'Sales Order'	\
+				WHEN document_type ='0003' THEN 'Returns'	\
+				WHEN document_type ='0005' THEN 'STMs'	\
+			END as OrderType	\
+			from aws_ster_sch.YFS_order_header	\
+			where	\
+			createts > (CURRENT TIMESTAMP - 24 HOUR) 	\
+			group by document_type, entry_type	\
+			Order by document_type asc	\
+
+q_0003 = Select Status, Status_Name , count(*) as OrderLineCount \
+			from  \
+			(	 \
+			  select B.Order_No, C.Status, C.Status_Name	 \
+			  from		 \
+			  aws_ster_sch.yfs_order_release_status A, 	 \
+			  aws_ster_sch.yfs_order_header B, 	 \
+			  aws_ster_sch.yfs_status C	 \
+			  where  	 \
+			  A.status_quantity > 0	 \
+			  and B.Document_Type='0001'	 \
+			  and C.process_type_Key ='ORDER_FULFILLMENT'	 \
+			  and A.Order_header_key = B.Order_header_key	 \
+			  and A.Status = C.Status	 \
+			  and A.createts > (CURRENT TIMESTAMP - 24 HOUR)	 \
+			  order by  C.Status 	 \
+			)	 \
+			group by Status,status_name	 \
+			
+q_0004	= Select Status_Name , count(*) as OrderLineCount 	 \
+			from 	 \
+			(	 \
+			  select B.Order_No, C.Status_Name	 \
+			  from	 \
+			  aws_ster_sch.yfs_order_release_status A, 	 \
+			  aws_ster_sch.yfs_order_header B, 	 \
+			  aws_ster_sch.yfs_status C	 \
+			  where  	 \
+			  A.status_quantity > 0	 \
+			  and B.Document_Type='0003'	 \
+			  and C.process_type_Key ='ORDER_FULFILLMENT'	 \
+			  and A.Order_header_key = B.Order_header_key	 \
+			  and A.Status = C.Status	 \
+			  and B.createts > (CURRENT TIMESTAMP - 24 HOUR)	 \
+			  order by  C.Status 	 \
+			)	 \
+			group by status_name				 \
+
+q_0005	= Select Status_Name , count(*) as OrderLineCount 	 \
+			from 	 \
+			(	 \
+			  select B.Order_No, C.Status_Name	 \
+			  from	 \
+			  aws_ster_sch.yfs_order_release_status A, 	 \
+			  aws_ster_sch.yfs_order_header B, 	 \
+			  aws_ster_sch.yfs_status C	 \
+			  where  	 \
+			  A.status_quantity > 0	 \
+			  and B.Document_Type='0005'	 \
+			  and C.process_type_Key ='ORDER_FULFILLMENT'	 \
+			  and A.Order_header_key = B.Order_header_key	 \
+			  and A.Status = C.Status	 \
+			  and B.createts > (CURRENT TIMESTAMP - 24 HOUR)	 \
+			  order by  C.Status 	 \
+			)	 \
+			group by status_name	\
+
+q_0006	= 	SELECT	\
+			A.EXTN_ORDER_CHANNEL,A.Order_No, A.createts,	\
+			C.First_Name CONCAT ',' CONCAT C.Last_Name as FullName, 	\
+			trim(C.City) CONCAT '-' CONCAT trim(C.State) as Location, 	\
+			A.Shipment_no,A.hold_flag, B.Status_Name,		\
+			A.SCAC, A.AIRWAY_BILL_NO, A.Carrier_Service_Code,A.Carrier_Pickup_Time,		\
+			A.Delivery_TS,	A.Must_Ship_Before_Date,		\
+			A.EXTN_PAYMENT_TYPE,A.Extn_Total_Net_Amount,A.Extn_COD_Amount,		\
+			A.Extn_Shipping_Charges, A.Expected_Delivery_Date, A.Actual_Delivery_Date,		\
+			A.EXTN_INVOICE_DATE,A.EXTN_INVOICE_NO		\
+			FROM aws_ster_sch.yfs_shipment A, aws_ster_sch.yfs_status B	, aws_ster_sch.yfs_person_info C		\
+			where  A.EXTN_ORDER_CHANNEL ='WCS'		\
+			 and A.Status = B.Status  and B.process_type_Key ='ORDER_DELIVERY'		\
+			 and A.To_Address_Key = C.Person_info_Key			\
+			 and A.createts > (CURRENT TIMESTAMP - 120 HOUR)		\	
+			Order by A.createts desc		\
+
+			 
+q_0007	= SELECT   Count(*) as TCI_ATP_Record_Count 	\
+			from aws_ster_sch.Titan_DADI_Inv_Avl_Staging		\
+			where  		\
+			Modifyts > (CURRENT TIMESTAMP - 1 HOUR)		\
+			and Seller_name='TCI' 		\
+			and Available_qty > 0 		\
+			
+q_0008	= SELECT  Node,Seller_name, item_id,Available_qty, has_published, modifyts			\
+			from aws_ster_sch.Titan_DADI_Inv_Avl_Staging		\
+			where  		\
+			Modifyts > (CURRENT TIMESTAMP - 24 HOUR)		\
+			and Seller_name='TCI' 		\
+			and Available_qty > 0		\
+			order by Modifyts desc		\
+			
+q_0009  = SELECT Status as ServerStatus, count(*) as StatusCount,		\
+			CASE 		\
+				WHEN status ='00' THEN 'Running(00)'		\
+				WHEN status ='01' THEN 'Stopped(01)'		\
+				WHEN status ='02' THEN 'Terminate(02)'		\
+			END as ServerStatusName      		\
+			from aws_ster_sch.yfs_heartbeat		\
+			group by status		\
+			order by status					\
+						
+q_0010	=	SELECT Server_name, Sum(Statistic_Value) as Integ_Server_Processed_Per_Hr		\
+				from aws_ster_sch.yfs_statistics_detail 		\
+				where		\
+				modifyts >(CURRENT TIMESTAMP - 1 HOUR)		\
+				and statistic_name ='Invocations' 		\
+				and Service_Type='INTEGRATION'		\
+				Group by Server_name		\
+				Order by  Integ_Server_Processed_Per_Hr desc 		\
+		
+q_0011	=	SELECT Server_name, Sum(Statistic_Value) as Agent_Server_Processed_Per_Hr		\
+				from aws_ster_sch.yfs_statistics_detail 		\
+				where		\
+				modifyts >(CURRENT TIMESTAMP - 1 HOUR)		\
+				and statistic_name ='Invocations' 		\
+				and Service_Type='AGENT'		\
+				Group by Server_name		\
+				Order by  Agent_Server_Processed_Per_Hr desc 		\
+
+q_0012	=	SELECT flow_name, count(*) as Error_Count_Per_Hr		\
+				from aws_ster_sch.YFS_REPROCESS_ERROR		\
+				where 		\
+				State='Initial'		\
+				and modifyts > (CURRENT TIMESTAMP - 24 HOUR)		\
+				Group By flow_name		\
+				Order by  Error_Count_Per_Hr desc		\
+				
+				
+q_0013	=	SELECT  Reservation_id,ship_date,expiration_date,		\
+			product_availability_date,modifyuserID, ModifyProgID,		\
+			quantity, Demand_Type		\
+			from aws_ster_sch.yfs_inventory_reservation		\
+			
+q_0014 	=	SELECT Status , count(*) as ItemCount,		\
+			CASE 		\
+				WHEN status ='3000' THEN 'Active(00)'		\
+				WHEN status ='2000' THEN 'Held(01)'		\
+			END as ItemStatusName   		\
+			from aws_ster_sch.yfs_item		\
+			group by Status		\
+			
+q_0015	=	select Context_Name, Server_Name, Statistic_value,modifyts 		\
+			from aws_ster_sch.yfs_statistics_detail		\
+			where 		\
+			context_name IN ('SCWC_SDF_getInventoryAvailability','SCWC_SDF_pushInventoryMessages','TITAN_FindInventory') \
+			and statistic_name='Invocations'		\
+			and Modifyts > (CURRENT TIMESTAMP - 2 HOUR)		\
+			order by modifyts desc						\
+
+q_0016	=	select Uploadedts as UploadTime , UploadedUserId as  UploadedBy,		\
+			UPLOADEDFILENAME as FileName 		\
+			from aws_ster_sch.TITAN_DADI_UPLOAD_AUDIT		\
+			where 		\
+			createts > (CURRENT TIMESTAMP - 240 HOUR)		\
+			order by modifyts desc 		\
+			 
+q_0017	= 	Select A.document_type,A.entry_type, A.order_no,A.order_date, 		\
+			B.First_Name, B.Last_Name, D.Status_Name			\
+			from aws_ster_sch.YFS_order_header A, aws_ster_sch.yfs_Person_Info B, 		\
+			aws_ster_sch.YFS_Order_Release_Status C,  aws_ster_sch.yfs_status D		\
+			where				\
+			A.document_type IN ('0001','0003')		\
+			and A.Ship_To_Key =B.Person_Info_Key 	\
+			and A.Order_Header_Key=C.Order_Header_Key		\
+			and C.Status = D.Status  		\
+			and D.process_type_Key IN ('ORDER_FULFILLMENT')		\
+			and (C.status < '3350' OR C.status ='9000')		\
+			and C.Status_Quantity > 0		\
+			and A.createts > (CURRENT TIMESTAMP - 24 HOUR)	\
+			Order by Entry_Type desc, order_date desc	\
+
+			
+q_0018	=	select distinct exception_type, count(*) as ExceptionCount 		\
+			from aws_ster_sch.yfs_inbox 		\
+			where status='OPEN' 		\
+			group by exception_type 		\
+			order by ExceptionCount desc 		\
+
+			
+q_0019	=	select B.Entry_Type, A.hold_type, count(*) as OpenHoldCount 		\
+			from		 		\
+			aws_ster_sch.YFS_ORDER_HOLD_TYPE  A, aws_ster_sch.YFS_ORDER_HEADER B 		\
+			where 		\
+			A.Order_header_key = B.Order_header_key 		\
+			and A.STATUS='1100' 		\
+			group by B.Entry_Type, A.hold_type 		\
+			
+q_0020 =	select extn_carrier_name,extn_mode_of_payment, extn_is_used , count(*) as Count		\
+			from  aws_ster_sch.TITAN_AWB		\
+			group by extn_carrier_name,extn_mode_of_payment,extn_is_used		\
+			
+q_0021	=	SELECT  *  FROM ( 			\
+			  select 		\
+			  A.extn_airway_bill_no , count(*) as ShipmentCount		\
+			  from  aws_ster_sch.TITAN_AWB A, aws_ster_sch.YFS_SHIPMENT B		\
+			  where		\
+			  A.extn_airway_bill_no = B.EXTN_AIRWAY_BILL_NO		\
+			  group by A.extn_airway_bill_no		\
+			)		\
+			where ShipmentCount > 1		\
+
+q_0022 	=  select A.Order_No, A.Order_Date, A.Payment_Status , C.Payment_Type, \
+			C.Total_Authorized, C.Total_Charged, C.Total_Refunded_Amount 	\
+			from   	\
+			aws_ster_sch.YFS_Order_Header A, aws_ster_sch.YFS_Charge_Transaction B, aws_ster_sch.YFS_Payment C 	\
+			where  	\
+			A.Order_Header_Key = B.Order_Header_Key 	\
+			and A.Order_Header_Key = C.Order_Header_Key 	\
+			and B.Payment_Key = C.Payment_Key  	\
+			and B.Status='OPEN' 	\
+ 
+q_0023 	=	select Manufacturer_Item_Desc,  count (*)  as ItemCount 	\
+			from aws_Ster_sch.yfs_item 	\
+			group by Manufacturer_Item_Desc 	\
+ 
+q_0024 	=   select EXTN_BRAND_CODE,Manufacturer_Item_Desc,  count (*) as ItemCount  	\
+			from aws_Ster_sch.yfs_item 	\
+			group by EXTN_BRAND_CODE,Manufacturer_Item_Desc 	\
+			
+q_0025 	= 	select substr(a.order_header_key,1,8) as Date,a.entry_type,count(1) as Count 	\
+			from aws_ster_sch.yfs_order_header a  	\
+			where a.order_header_key > TO_CHAR(current date -7 day,'YYYYMMDD') 	\
+			and a.order_header_key < TO_CHAR(current date,'YYYYMMDD') 	\
+			and a.document_type ='0001' 	\
+			group by substr(a.order_header_key,1,8),a.document_type,a.entry_type  	\
+			order by a.entry_type,a.document_type 	\
+
+q_0026 	= 	select substr(a.order_header_key,1,8) as Date,a.entry_type,count(1) as Count  	\
+			from aws_ster_sch.yfs_order_header a  	\
+			where a.order_header_key > TO_CHAR(current date -7 day,'YYYYMMDD') 	\
+			and a.order_header_key < TO_CHAR(current date,'YYYYMMDD') 	\
+			and a.document_type ='0003' 	\
+			group by substr(a.order_header_key,1,8),a.document_type,a.entry_type  	\
+			order by a.entry_type,a.document_type 	\
+			
